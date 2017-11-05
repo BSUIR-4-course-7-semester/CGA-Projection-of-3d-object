@@ -5,8 +5,8 @@ from sdl2 import SDL_Point
 
 Rx = lambda th: [
     [1, 0, 0, 0],
-    [0, math.cos(th), -math.sin(th), 0],
-    [0, math.sin(th), math.cos(th), 0],
+    [0, math.cos(th), math.sin(th), 0],
+    [0, -math.sin(th), math.cos(th), 0],
     [0, 0, 0, 1]
 ]
 

@@ -52,11 +52,11 @@ class Ladder:
         self.triangles.append(Triangle(a1, b1, c1))
         self.triangles.append(Triangle(a1, d1, c1))
 
-        self.triangles.append(Triangle(f, f1, b))
-        self.triangles.append(Triangle(b, b1, f1))
+        self.triangles.append(Triangle(b, f, f1))
+        self.triangles.append(Triangle(f1, b1, b))
 
-        self.triangles.append(Triangle(b, c, b1))
-        self.triangles.append(Triangle(c1, b1, c))
+        self.triangles.append(Triangle(c, b, b1))
+        self.triangles.append(Triangle(b1, c1, c))
 
     def _generate_back(self):
         a = self._l_t + Point3D(z=self._step_count * self._step_height)

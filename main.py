@@ -3,6 +3,7 @@ import sdl2.ext
 import sys
 
 from sdl2 import SDL_Point, SDL_KEYDOWN, SDLK_RIGHT, SDLK_LEFT, SDLK_z, SDLK_x, SDLK_y, SDLK_t, SDLK_s, SDLK_r
+from sdl2.examples.gui import GREEN
 from sdl2.examples.pixelaccess import WHITE, BLACK
 
 from camera import Camera
@@ -36,12 +37,20 @@ def adapt_3d_point_to_projection(point3d, camera):
     )
     return SDL_Point(res.x, res.z)
 
+
 def adapt_3d_point_to_right_projection(point3d):
     return SDL_Point(point3d.y, point3d.z)
 
 
 def adapt_3d_point_to_up_projection(point3d):
-    return SDL_Point(point3d.x, point3d.y)
+    # return SDL_Point(point3d.x, point3d.y)
+    res = Point3D.from_uniform_coordinates(numpy.dot([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 1]
+    ], point3d.to_uniform_coordinates()))
+    return SDL_Point(res.x, res.y)
 
 
 def draw_projection(pixels, camera, figures, adapt_point_func):
@@ -59,7 +68,7 @@ def draw_projection(pixels, camera, figures, adapt_point_func):
         ] for line in lines]
 
     for line in lines:
-        draw_line(pixels, line[0], line[1], WHITE)
+        draw_line(pixels, line[0], line[1], GREEN)
 
 
 def clear(surface):
@@ -138,7 +147,7 @@ def main():
         if is_changed:
             is_changed = False
             clear(window_surface)
-            draw_projection(pixels, camera, [ladder], adapt_3d_point_to_front_projection)
+            draw_projection(pixels, camera, [ladder], adapt_3d_point_to_up_projection)
             window.refresh()
 
     sdl2.ext.quit()
