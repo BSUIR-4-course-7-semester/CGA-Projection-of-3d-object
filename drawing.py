@@ -6,6 +6,8 @@ def get_pixel(pixels, point):
 
 
 def put_pixel(pixels, point, color):
+    if point.x < 0 or point.x >= 640 or point.y < 0 or point.y >= 480:
+        return
     pixels[point.y][point.x] = color
 
 

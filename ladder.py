@@ -1,4 +1,7 @@
+import math
+
 from point import Point3D
+from transform_options import TransformOptions
 from triangle import Triangle
 
 
@@ -8,12 +11,20 @@ class Ladder:
             raise Exception('Step count must be more than 0')
 
         self.triangles = []
+        self.x_angle = 0
+        self.y_angle = 0
+        self.z_angle = 0
+        self.dx = 250
+        self.dy = 0
+        self.dz = 150
+        self.scale = 1
 
         self._step_height = step_height
         self._step_length = step_height * 2
         self._width = width
         self._step_count = step_count
         self._base_point = Point3D()
+
         self._generate()
 
     def _generate(self):
@@ -63,6 +74,40 @@ class Ladder:
         self.triangles.append(Triangle(self._l_t, self._r_t, self._r_b))
         self.triangles.append(Triangle(self._l_t, self._l_b, self._r_b))
 
+    def rotate_x(self, d_angle):
+        self.x_angle += math.radians(d_angle)
+
+    def rotate_y(self, d_angle):
+        self.y_angle += math.radians(d_angle)
+
+    def rotate_z(self, d_angle):
+        self.z_angle += math.radians(d_angle)
+
+    def translate_x(self, d):
+        self.dx += d
+
+    def translate_y(self, d):
+        self.dy += d
+
+    def translate_z(self, d):
+        self.dz += d
+
+    def plus_scale(self):
+        self.scale += 0.1
+
+    def minus_scale(self):
+        self.scale -= 0.1
+
+    def get_transform_options(self):
+        return TransformOptions(
+            self.x_angle,
+            self.y_angle,
+            self.z_angle,
+            self.scale,
+            self.dx,
+            self.dy,
+            self.dz
+        )
 
 
 
