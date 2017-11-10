@@ -9,10 +9,11 @@ from sdl2.examples.gui import GREEN
 from sdl2.examples.pixelaccess import WHITE, BLACK
 
 from camera import Camera
-from drawing import draw_line
+from drawing import draw_line, put_pixel
 from ladder import Ladder
 from point import Point3D
 from triangle import has_line
+from z_buffer import ZBuffer
 
 # FRAME_INTERVAL = sys.maxsize
 FRAME_INTERVAL = 0.01
@@ -67,17 +68,26 @@ def draw_projection(pixels, camera, figures, adapt_point_func):
             triangles.append(tr)
             lines += tr.to_lines()
 
+    z_buf = ZBuffer(640, 480)
+
+    for triangle in triangles:
+        z_buf.rasterize_triangle(triangle)
+
+    for i in range(640):
+        for j in range(480):
+            put_pixel(pixels, SDL_Point(i, j), z_buf.get_color(i, j))
+
     # print(len(lines))
 
-    uniq_lines = []
-    for line in lines:
-        if not has_line(uniq_lines, line):
-            uniq_lines.append(line)
+    # uniq_lines = []
+    # for line in lines:
+    #     if not has_line(uniq_lines, line):
+    #         uniq_lines.append(line)
 
     # print(len(uniq_lines))
 
-    for line in uniq_lines:
-        draw_line(pixels, line, GREEN, WHITE, triangles)
+    # for line in uniq_lines:
+    #     draw_line(pixels, line, GREEN, WHITE, triangles)
 
 
 def clear(surface):

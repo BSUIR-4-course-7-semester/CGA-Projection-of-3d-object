@@ -17,7 +17,7 @@ class Ladder:
         self.dx = 275
         self.dy = 125
         self.dz = 0
-        self.scale = 1
+        self.scale = 0.2
 
         self._step_height = step_height
         self._step_length = step_height * 2
