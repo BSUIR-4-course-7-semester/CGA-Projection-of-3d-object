@@ -12,6 +12,9 @@ from camera import Camera
 from drawing import draw_line
 from ladder import Ladder
 from point import Point3D
+from triangle import has_line
+
+FRAME_INTERVAL = sys.maxsize
 
 T = 't'
 R = 'r'
@@ -51,15 +54,6 @@ def adapt_3d_point_to_up_projection(point3d):
     return SDL_Point(point3d.x, point3d.y)
 
 
-def has_line(lines, line):
-    for l in lines:
-        if l[0].x == line[0].x and l[0].y == line[0].y and l[1].x == line[1].x and l[1].y == line[1].y or \
-            l[0].x == line[1].x and l[0].y == line[1].y and l[1].x == line[0].x and l[1].y == line[0].y:
-            return True
-
-    return False
-
-
 def draw_projection(pixels, camera, figures, adapt_point_func):
     lines = []
     triangles = []
@@ -72,14 +66,14 @@ def draw_projection(pixels, camera, figures, adapt_point_func):
             triangles.append(tr)
             lines += tr.to_lines()
 
-    print(len(lines))
+    # print(len(lines))
 
     uniq_lines = []
     for line in lines:
         if not has_line(uniq_lines, line):
             uniq_lines.append(line)
 
-    print(len(uniq_lines))
+    # print(len(uniq_lines))
 
     for line in uniq_lines:
         draw_line(pixels, line, GREEN, WHITE, triangles)
@@ -162,7 +156,7 @@ def main():
 
         curr_time = time.time()
 
-        if curr_time - last_frame_time > 0.2:
+        if curr_time - last_frame_time > FRAME_INTERVAL:
             ladder.rotate_y(5)
             is_changed = True
             last_frame_time = curr_time

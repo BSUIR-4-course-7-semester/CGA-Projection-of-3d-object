@@ -1,8 +1,11 @@
 from sdl2 import SDL_Point
-from sdl2.examples.pixelaccess import BLACK
+from sdl2.examples.gui import GREEN
+from sdl2.examples.pixelaccess import BLACK, WHITE
 
 from point import Point3D
 
+WHITE_INT = 16777215
+GREEN_INT = 65280
 
 def get_pixel(pixels, point):
     return pixels[point.y][point.x]
@@ -14,11 +17,11 @@ def put_pixel(pixels, point, color):
     pixels[point.y][point.x] = color
 
 
-def is_hidden(point, z_index, triangles):
+def is_hidden(point, z_index, triangles, line):
     result = False
 
     for triangle in triangles:
-        if triangle.is_point_inside(point) and triangle.get_z_index() > z_index:
+        if not triangle.has_line(line) and triangle.is_point_inside(point) and triangle.get_z_index() > z_index:
             result = True
             break
 
@@ -26,11 +29,11 @@ def is_hidden(point, z_index, triangles):
 
 
 def draw_line(pixels, line, visible_color, hidden_color, triangles):
-    hidden_color = BLACK
+    # hidden_color = BLACK
 
     steep = False
 
-    is_last_hidden = False
+    dash = 0
 
     x0 = line[0].x
     y0 = line[0].y
@@ -38,8 +41,6 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
     y1 = line[1].y
     z0 = line[0].z
     z1 = line[1].z
-
-    z_index = (z0 + z1) / 2
 
     if abs(x0 - x1) < abs(y0 - y1):
         x0, y0 = y0, x0
@@ -56,8 +57,10 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
         return
 
     dy = (y1 - y0) / dx
+    dz = (z1 - z0) / dx
 
     y = y0
+    z = z0
 
     for x in range(x0, x1 + 1):
         point_to_draw = None
@@ -67,8 +70,16 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
         else:
             point_to_draw = SDL_Point(x, int(y))
 
-        is_current_hidden = is_hidden(point_to_draw, z_index, triangles)
+        is_current_hidden = is_hidden(point_to_draw, z, triangles, line)
 
-        put_pixel(pixels, point_to_draw, hidden_color if is_current_hidden else visible_color)
+        pixel = get_pixel(pixels, point_to_draw)
+
+        color = BLACK if is_current_hidden and dash == 1 else visible_color
+
+        if color == GREEN or pixel != GREEN_INT:
+            put_pixel(pixels, point_to_draw, color)
 
         y += dy
+        z += dz
+
+        dash = (dash + 1) % 2 if is_current_hidden else 0

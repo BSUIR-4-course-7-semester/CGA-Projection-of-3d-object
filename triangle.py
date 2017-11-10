@@ -3,6 +3,15 @@ import math
 EPS = 0
 
 
+def has_line(lines, line):
+    for l in lines:
+        if l[0].x == line[0].x and l[0].y == line[0].y and l[1].x == line[1].x and l[1].y == line[1].y or \
+            l[0].x == line[1].x and l[0].y == line[1].y and l[1].x == line[0].x and l[1].y == line[0].y:
+            return True
+
+    return False
+
+
 class Triangle:
     def __init__(self, a, b, c):
         self.a = a
@@ -43,3 +52,6 @@ class Triangle:
 
     def get_z_index(self):
         return min(self.a.z, self.b.z, self.c.z)
+
+    def has_line(self, line):
+        return has_line(self.to_lines(), line)

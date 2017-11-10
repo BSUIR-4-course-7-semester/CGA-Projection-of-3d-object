@@ -11,12 +11,12 @@ class Ladder:
             raise Exception('Step count must be more than 0')
 
         self.triangles = []
-        self.x_angle = -1.15
-        self.y_angle = 1.22
-        self.z_angle = 0.4
+        self.x_angle = 0.85
+        self.y_angle = 1.57
+        self.z_angle = 0
         self.dx = 275
         self.dy = 125
-        self.dz = 150
+        self.dz = 0
         self.scale = 1
 
         self._step_height = step_height
