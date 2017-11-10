@@ -1,4 +1,7 @@
 from sdl2 import SDL_Point
+from sdl2.examples.pixelaccess import BLACK
+
+from point import Point3D
 
 
 def get_pixel(pixels, point):
@@ -11,44 +14,61 @@ def put_pixel(pixels, point, color):
     pixels[point.y][point.x] = color
 
 
-def draw_line(pixels, point_a, point_b, color):
-    dx = abs(point_a.x - point_b.x)
-    dy = abs(point_a.y - point_b.y)
+def is_hidden(point, z_index, triangles):
+    result = False
 
-    sx = 1 if point_b.x >= point_a.x else -1
-    sy = 1 if point_b.y >= point_a.y else -1
+    for triangle in triangles:
+        if triangle.is_point_inside(point) and triangle.get_z_index() > z_index:
+            result = True
+            break
 
-    if dy <= dx:
-        d = dy * 2 - dx
-        d1 = dy * 2
-        d2 = (dy - dx) * 2
+    return result
 
-        put_pixel(pixels, point_a, color)
-        x = point_a.x + sx
-        y = point_a.y
-        for i in range(1, dx + 1):
-            if d > 0:
-                d += d2
-                y += sy
-            else:
-                d += d1
 
-            put_pixel(pixels, SDL_Point(x, y), color)
-            x += sx
-    else:
-        d = dx * 2 - dy
-        d1 = dx * 2
-        d2 = (dx - dy) * 2
+def draw_line(pixels, line, visible_color, hidden_color, triangles):
+    hidden_color = BLACK
 
-        put_pixel(pixels, point_a, color)
-        x = point_a.x
-        y = point_a.y + sy
-        for i in range(1, dy + 1):
-            if d > 0:
-                d += d2
-                x += sx
-            else:
-                d += d1
+    steep = False
 
-            put_pixel(pixels, SDL_Point(x, y), color)
-            y += sy
+    is_last_hidden = False
+
+    x0 = line[0].x
+    y0 = line[0].y
+    x1 = line[1].x
+    y1 = line[1].y
+    z0 = line[0].z
+    z1 = line[1].z
+
+    z_index = (z0 + z1) / 2
+
+    if abs(x0 - x1) < abs(y0 - y1):
+        x0, y0 = y0, x0
+        x1, y1 = y1, x1
+        steep = True
+
+    if x0 > x1:
+        x0, x1 = x1, x0
+        y0, y1 = y1, y0
+
+    dx = x1 - x0
+
+    if dx == 0:
+        return
+
+    dy = (y1 - y0) / dx
+
+    y = y0
+
+    for x in range(x0, x1 + 1):
+        point_to_draw = None
+
+        if steep:
+            point_to_draw = SDL_Point(int(y), x)
+        else:
+            point_to_draw = SDL_Point(x, int(y))
+
+        is_current_hidden = is_hidden(point_to_draw, z_index, triangles)
+
+        put_pixel(pixels, point_to_draw, hidden_color if is_current_hidden else visible_color)
+
+        y += dy
