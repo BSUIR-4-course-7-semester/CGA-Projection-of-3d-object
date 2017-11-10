@@ -74,7 +74,7 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
 
         pixel = get_pixel(pixels, point_to_draw)
 
-        color = BLACK if is_current_hidden and dash == 1 else visible_color
+        color = BLACK if is_current_hidden and (dash != 0 and dash < 4) else visible_color
 
         if color == GREEN or pixel != GREEN_INT:
             put_pixel(pixels, point_to_draw, color)
@@ -82,4 +82,4 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
         y += dy
         z += dz
 
-        dash = (dash + 1) % 2 if is_current_hidden else 0
+        dash = (dash + 1) % 5 if is_current_hidden else 0
