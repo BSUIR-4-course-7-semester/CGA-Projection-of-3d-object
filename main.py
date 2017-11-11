@@ -16,8 +16,8 @@ from ladder import Ladder
 from point import Point3D
 from triangle import has_line
 
-FRAME_INTERVAL = sys.maxsize
-# FRAME_INTERVAL = 0.2
+# FRAME_INTERVAL = sys.maxsize
+FRAME_INTERVAL = 0.5
 STEP_COUNT = 2
 
 T = 't'
@@ -92,7 +92,7 @@ def main():
     running = True
 
     camera = Camera(640, 480, 20, 300)
-    ladder = Ladder(50, 100, STEP_COUNT)
+    ladder = Ladder(20, 40, STEP_COUNT)
 
     operation = R
     selected_axis = Y
