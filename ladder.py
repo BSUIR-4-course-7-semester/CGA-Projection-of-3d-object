@@ -1,5 +1,6 @@
 import math
 
+from edge import Edge
 from point import Point3D
 from transform_options import TransformOptions
 from triangle import Triangle
@@ -11,12 +12,13 @@ class Ladder:
             raise Exception('Step count must be more than 0')
 
         self.triangles = []
+        self.edges = []
         self.x_angle = 0.85
-        self.y_angle = 1.57
+        self.y_angle = 2.07
         self.z_angle = 0
         self.dx = 275
         self.dy = 125
-        self.dz = 0
+        self.dz = 200
         self.scale = 1
 
         self._step_height = step_height
@@ -58,12 +60,22 @@ class Ladder:
         self.triangles.append(Triangle(c, b, b1))
         self.triangles.append(Triangle(b1, c1, c))
 
+        self.edges.append(Edge(f, b))
+        self.edges.append(Edge(f1, b1))
+        self.edges.append(Edge(b, b1))
+        self.edges.append(Edge(c, c1))
+        self.edges.append(Edge(b, c))
+        self.edges.append(Edge(b1, c1))
+
     def _generate_back(self):
         a = self._l_t + Point3D(z=self._step_count * self._step_height)
         b = a + Point3D(self._width)
 
         self.triangles.append(Triangle(a, b, self._r_t))
         self.triangles.append(Triangle(a, self._l_t, self._r_t))
+
+        self.edges.append(Edge(a, self._l_t))
+        self.edges.append(Edge(b, self._r_t))
 
     def _generate_base(self):
         self._l_t = self._base_point
@@ -73,6 +85,11 @@ class Ladder:
 
         self.triangles.append(Triangle(self._l_t, self._r_t, self._r_b))
         self.triangles.append(Triangle(self._l_t, self._l_b, self._r_b))
+
+        self.edges.append(Edge(self._l_t, self._r_t))
+        self.edges.append(Edge(self._r_t, self._r_b))
+        self.edges.append(Edge(self._r_b, self._l_b))
+        self.edges.append(Edge(self._l_b, self._l_t))
 
     def rotate_x(self, d_angle):
         self.x_angle += math.radians(d_angle)

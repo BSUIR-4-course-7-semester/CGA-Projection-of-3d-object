@@ -1,12 +1,35 @@
 import math
+import numpy as np
 
-EPS = 0
+from edge import Edge
+
+# EPS = 0.035
+EPS = 0.0
+
+
+def calc_barycentric(triangle, point):
+    barycentric = None
+
+    u = np.cross(
+        [triangle.c.x - triangle.a.x, triangle.b.x - triangle.a.x, triangle.a.x - point.x],
+        [triangle.c.y - triangle.a.y, triangle.b.y - triangle.a.y, triangle.a.y - point.y]
+    )
+
+    if abs(u[2]) < 1:
+        barycentric = [-1, 1, 1]
+    else:
+        barycentric = [
+            1 - (u[0] + u[1]) / u[2],
+            u[1] / u[2],
+            u[0] / u[2]
+        ]
+
+    return barycentric
 
 
 def has_line(lines, line):
     for l in lines:
-        if l[0].x == line[0].x and l[0].y == line[0].y and l[1].x == line[1].x and l[1].y == line[1].y or \
-            l[0].x == line[1].x and l[0].y == line[1].y and l[1].x == line[0].x and l[1].y == line[0].y:
+        if l == line:
             return True
 
     return False
@@ -20,8 +43,8 @@ class Triangle:
 
     def to_lines(self):
         return [
-            (self.a, self.b),
-            (self.b, self.c),
+            Edge(self.a, self.b),
+            Edge(self.b, self.c),
             # [self.c, self.a]
         ]
 
@@ -31,27 +54,18 @@ class Triangle:
         return Triangle(points[0], points[1], points[2])
 
     def is_point_inside(self, point):
-        x = point.x
-        y = point.y
+        barycentric = calc_barycentric(self, point)
 
-        x1 = self.a.x
-        y1 = self.a.y
-        x2 = self.b.x
-        y2 = self.b.y
-        x3 = self.c.x
-        y3 = self.c.y
+        result = barycentric[2] >= EPS and barycentric[1] >= EPS and barycentric[0] >= EPS
 
-        if (x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1) == 0 or x2 - x1 == 0:
-            return True
+        return result, barycentric
 
-        m3 = ((x - x1) * (y2 - y1) - (y - y1) * (x2 - x1)) / ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1))
-        m2 = (x - x1 - m3 * (x3 - x1)) / (x2 - x1)
-        m1 = round(1 - m2 - m3, 2)
-
-        return m3 >= EPS and m2 >= EPS and m1 >= EPS
-
-    def get_z_index(self):
-        return min(self.a.z, self.b.z, self.c.z)
+    def get_z_index(self, barycentric_coords_of_point):
+        return sum([
+            self.a.z * barycentric_coords_of_point[0],
+            self.b.z * barycentric_coords_of_point[1],
+            self.c.z * barycentric_coords_of_point[2]
+        ]) + 7  # it's because of error in calculating of z coordinate on triangle by barycentric
 
     def has_line(self, line):
         return has_line(self.to_lines(), line)

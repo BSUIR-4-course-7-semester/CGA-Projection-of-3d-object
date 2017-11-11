@@ -1,11 +1,6 @@
+import math
 from sdl2 import SDL_Point
-from sdl2.examples.gui import GREEN
-from sdl2.examples.pixelaccess import BLACK, WHITE
 
-from point import Point3D
-
-WHITE_INT = 16777215
-GREEN_INT = 65280
 
 def get_pixel(pixels, point):
     return pixels[point.y][point.x]
@@ -20,17 +15,28 @@ def put_pixel(pixels, point, color):
 def is_hidden(point, z_index, triangles, line):
     result = False
 
+    # if 190 < point.x < 200 and 160 < point.y < 170:
+    # if 160 <= point.x < 170 and 190 <= point.y < 200:
+    # if 280 <= point.x < 290 and 170 <= point.y < 180:
+    #     print('test')
+
     for triangle in triangles:
-        if not triangle.has_line(line) and triangle.is_point_inside(point) and triangle.get_z_index() > z_index:
-            result = True
-            break
+        if triangle.has_line(line):
+            continue
+
+        is_inside, barycentric_coords = triangle.is_point_inside(point)
+
+        if is_inside:
+            z_on_triangle = triangle.get_z_index(barycentric_coords)
+            if z_on_triangle < z_index:
+                result = True
+                break
 
     return result
 
 
 def draw_line(pixels, line, visible_color, hidden_color, triangles):
-    # hidden_color = BLACK
-
+    # print(line)
     steep = False
 
     dash = 0
@@ -42,6 +48,9 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
     z0 = line[0].z
     z1 = line[1].z
 
+    # if z0 > z1:
+    #     zo, z1 = z1, z0
+
     if abs(x0 - x1) < abs(y0 - y1):
         x0, y0 = y0, x0
         x1, y1 = y1, x1
@@ -50,6 +59,7 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
     if x0 > x1:
         x0, x1 = x1, x0
         y0, y1 = y1, y0
+        z0, z1 = z1, z0
 
     dx = x1 - x0
 
@@ -58,9 +68,12 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
 
     dy = (y1 - y0) / dx
     dz = (z1 - z0) / dx
+    # dz = math.sqrt(dx ** 2 + dy ** 2)
 
     y = y0
     z = z0
+
+    divider = 10
 
     for x in range(x0, x1 + 1):
         point_to_draw = None
@@ -74,12 +87,14 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
 
         pixel = get_pixel(pixels, point_to_draw)
 
-        color = BLACK if is_current_hidden and (dash != 0 and dash < 4) else visible_color
+        color = None if is_current_hidden and (dash != 0 and dash < divider / 2) else visible_color
 
-        if color == GREEN or pixel != GREEN_INT:
+        if color is not None:
             put_pixel(pixels, point_to_draw, color)
 
         y += dy
         z += dz
 
-        dash = (dash + 1) % 5 if is_current_hidden else 0
+        # print(x, int(y), z)
+
+        dash = (dash + 1) % divider if is_current_hidden else 0

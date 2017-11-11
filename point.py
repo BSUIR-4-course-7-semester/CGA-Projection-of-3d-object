@@ -101,3 +101,6 @@ class Point3D:
         )
 
         return Point3D.from_uniform_coordinates(uniform_point)
+
+    def __eq__(self, p):
+        return p.x == self.x and p.y == self.y and p.z == self.z

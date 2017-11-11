@@ -4,6 +4,8 @@ import numpy
 import sdl2.ext
 import sys
 
+import ctypes
+
 from sdl2 import SDL_Point, SDL_KEYDOWN, SDLK_RIGHT, SDLK_LEFT, SDLK_z, SDLK_x, SDLK_y, SDLK_t, SDLK_s, SDLK_r
 from sdl2.examples.gui import GREEN
 from sdl2.examples.pixelaccess import WHITE, BLACK
@@ -14,8 +16,9 @@ from ladder import Ladder
 from point import Point3D
 from triangle import has_line
 
-# FRAME_INTERVAL = sys.maxsize
-FRAME_INTERVAL = 0.01
+FRAME_INTERVAL = sys.maxsize
+# FRAME_INTERVAL = 0.2
+STEP_COUNT = 2
 
 T = 't'
 R = 'r'
@@ -65,18 +68,11 @@ def draw_projection(pixels, camera, figures, adapt_point_func):
         for triangle in figure.triangles:
             tr = triangle.transform(transform_options)
             triangles.append(tr)
-            lines += tr.to_lines()
 
-    # print(len(lines))
+        for edge in figure.edges:
+            lines.append(edge.transform(transform_options))
 
-    uniq_lines = []
     for line in lines:
-        if not has_line(uniq_lines, line):
-            uniq_lines.append(line)
-
-    # print(len(uniq_lines))
-
-    for line in uniq_lines:
         draw_line(pixels, line, GREEN, WHITE, triangles)
 
 
@@ -96,7 +92,7 @@ def main():
     running = True
 
     camera = Camera(640, 480, 20, 300)
-    ladder = Ladder(20, 50, 2)
+    ladder = Ladder(50, 100, STEP_COUNT)
 
     operation = R
     selected_axis = Y
@@ -110,6 +106,11 @@ def main():
         for event in events:
             if event.type == sdl2.SDL_QUIT:
                 running = False
+                break
+            elif event.type == sdl2.SDL_MOUSEBUTTONUP:
+                x, y = ctypes.c_int(0), ctypes.c_int(0)
+                sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+                print(x.value, y.value)
                 break
             elif event.type == SDL_KEYDOWN:
                 if event.key.keysym.sym == SDLK_z:
