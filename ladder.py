@@ -13,12 +13,12 @@ class Ladder:
 
         self.triangles = []
         self.edges = []
-        self.x_angle = 0.85
-        self.y_angle = 2.07
+        self.x_angle = 0
+        self.y_angle = 0
         self.z_angle = 0
-        self.dx = 275
-        self.dy = 125
-        self.dz = 200
+        self.dx = 0
+        self.dy = 0
+        self.dz = 0
         self.scale = 1
 
         self._step_height = step_height

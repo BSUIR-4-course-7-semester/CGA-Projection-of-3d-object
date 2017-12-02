@@ -48,9 +48,9 @@ class Triangle:
             # [self.c, self.a]
         ]
 
-    def transform(self, options):
+    def transform(self, options, camera):
         points = [self.a, self.b, self.c]
-        points = [point.transform(options) for point in points]
+        points = [point.transform(options, camera) for point in points]
         return Triangle(points[0], points[1], points[2])
 
     def is_point_inside(self, point):

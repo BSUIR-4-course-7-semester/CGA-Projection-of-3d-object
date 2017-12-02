@@ -6,7 +6,8 @@ import sys
 
 import ctypes
 
-from sdl2 import SDL_Point, SDL_KEYDOWN, SDLK_RIGHT, SDLK_LEFT, SDLK_z, SDLK_x, SDLK_y, SDLK_t, SDLK_s, SDLK_r
+from sdl2 import SDL_Point, SDL_KEYDOWN, SDLK_RIGHT, SDLK_LEFT, SDLK_z, SDLK_x, SDLK_y, SDLK_t, SDLK_s, SDLK_r, SDLK_f, \
+    SDLK_c
 from sdl2.examples.gui import GREEN
 from sdl2.examples.pixelaccess import WHITE, BLACK
 
@@ -16,13 +17,14 @@ from ladder import Ladder
 from point import Point3D
 from triangle import has_line
 
-# FRAME_INTERVAL = sys.maxsize
-FRAME_INTERVAL = 0.5
-STEP_COUNT = 2
+FRAME_INTERVAL = sys.maxsize
+# FRAME_INTERVAL = 0.5
+STEP_COUNT = 1
 
 T = 't'
 R = 'r'
 S = 's'
+C = 'c'
 
 X = 'x'
 Y = 'y'
@@ -30,35 +32,14 @@ Z = 'z'
 
 D_ANGLE = 10
 D_DISTANCE = 25
+D_CAMERA_P = 0.001
 
 
-def adapt_3d_point_to_front_projection(point3d):
-    # return SDL_Point(point3d.x, point3d.z)
-    res = Point3D.from_uniform_coordinates(numpy.dot([
-        [1, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-    ], point3d.to_uniform_coordinates()))
-    return SDL_Point(res.x, res.z)
-
-
-def adapt_3d_point_to_projection(point3d, camera):
-    res = Point3D.from_uniform_coordinates(
-        numpy.dot(camera.projection_matrix, point3d.to_uniform_coordinates())
-    )
-    return SDL_Point(res.x, res.z)
-
-
-def adapt_3d_point_to_right_projection(point3d):
-    return SDL_Point(point3d.y, point3d.z)
-
-
-def adapt_3d_point_to_up_projection(point3d):
+def convert_3d_point_to_2d(point3d):
     return SDL_Point(point3d.x, point3d.y)
 
 
-def draw_projection(pixels, camera, figures, adapt_point_func):
+def draw_projection(pixels, camera, figures):
     lines = []
     triangles = []
 
@@ -66,11 +47,11 @@ def draw_projection(pixels, camera, figures, adapt_point_func):
         transform_options = figure.get_transform_options()
 
         for triangle in figure.triangles:
-            tr = triangle.transform(transform_options)
+            tr = triangle.transform(transform_options, camera)
             triangles.append(tr)
 
         for edge in figure.edges:
-            lines.append(edge.transform(transform_options))
+            lines.append(edge.transform(transform_options, camera))
 
     for line in lines:
         draw_line(pixels, line, GREEN, WHITE, triangles)
@@ -91,8 +72,8 @@ def main():
 
     running = True
 
-    camera = Camera(640, 480, 20, 300)
-    ladder = Ladder(20, 40, STEP_COUNT)
+    camera = Camera(640, 480)
+    ladder = Ladder(50, 50, STEP_COUNT)
 
     operation = R
     selected_axis = Y
@@ -132,6 +113,9 @@ def main():
                 elif event.key.keysym.sym == SDLK_r:
                     print('selected rotating')
                     operation = R
+                elif event.key.keysym.sym == SDLK_c:
+                    print('selected camera')
+                    operation = C
 
                 elif event.key.keysym.sym == SDLK_RIGHT or event.key.keysym.sym == SDLK_LEFT:
                     sign = 1 if event.key.keysym.sym == SDLK_RIGHT else -1
@@ -155,6 +139,8 @@ def main():
                             ladder.rotate_y(sign * D_ANGLE)
                         elif selected_axis == Z:
                             ladder.rotate_z(sign * D_ANGLE)
+                    elif operation == C:
+                        camera.change_p(sign * D_CAMERA_P)
 
         curr_time = time.time()
 
@@ -166,7 +152,7 @@ def main():
         if is_changed:
             is_changed = False
             clear(window_surface)
-            draw_projection(pixels, camera, [ladder], adapt_3d_point_to_up_projection)
+            draw_projection(pixels, camera, [ladder])
             window.refresh()
 
     sdl2.ext.quit()

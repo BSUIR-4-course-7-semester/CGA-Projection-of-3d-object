@@ -7,18 +7,17 @@ def get_pixel(pixels, point):
 
 
 def put_pixel(pixels, point, color):
-    if point.x < 0 or point.x >= 640 or point.y < 0 or point.y >= 480:
+    # axis shifting
+    x = point.x + 200
+    y = point.y + 100
+
+    if x < 0 or x >= 640 or y < 0 or y >= 480:
         return
-    pixels[point.y][point.x] = color
+    pixels[y][x] = color
 
 
 def is_hidden(point, z_index, triangles, line):
     result = False
-
-    # if 190 < point.x < 200 and 160 < point.y < 170:
-    # if 160 <= point.x < 170 and 190 <= point.y < 200:
-    # if 280 <= point.x < 290 and 170 <= point.y < 180:
-    #     print('test')
 
     for triangle in triangles:
         if triangle.has_line(line):
@@ -36,7 +35,6 @@ def is_hidden(point, z_index, triangles, line):
 
 
 def draw_line(pixels, line, visible_color, hidden_color, triangles):
-    # print(line)
     steep = False
 
     dash = 0
@@ -47,9 +45,6 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
     y1 = line[1].y
     z0 = line[0].z
     z1 = line[1].z
-
-    # if z0 > z1:
-    #     zo, z1 = z1, z0
 
     if abs(x0 - x1) < abs(y0 - y1):
         x0, y0 = y0, x0
@@ -68,7 +63,6 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
 
     dy = (y1 - y0) / dx
     dz = (z1 - z0) / dx
-    # dz = math.sqrt(dx ** 2 + dy ** 2)
 
     y = y0
     z = z0
@@ -85,8 +79,6 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
 
         is_current_hidden = is_hidden(point_to_draw, z, triangles, line)
 
-        pixel = get_pixel(pixels, point_to_draw)
-
         color = None if is_current_hidden and (dash != 0 and dash < divider / 2) else visible_color
 
         if color is not None:
@@ -94,7 +86,5 @@ def draw_line(pixels, line, visible_color, hidden_color, triangles):
 
         y += dy
         z += dz
-
-        # print(x, int(y), z)
 
         dash = (dash + 1) % divider if is_current_hidden else 0

@@ -5,9 +5,9 @@ class Edge:
         self.a = a
         self.b = b
 
-    def transform(self, options):
+    def transform(self, options, camera):
         points = [self.a, self.b]
-        points = [point.transform(options) for point in points]
+        points = [point.transform(options, camera) for point in points]
         return Edge(points[0], points[1])
 
     def __getitem__(self, index):

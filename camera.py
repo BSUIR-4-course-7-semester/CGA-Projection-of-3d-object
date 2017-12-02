@@ -1,15 +1,22 @@
+import numpy as np
+
+
 class Camera:
-    def __init__(self, width, height, front_distance, back_distance):
-        self.width = int(width / 2)
-        self.height = int(height / 2)
-        self.front_distance = front_distance
-        self.back_distance = back_distance
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.p = 0.005
 
-        q = back_distance / (back_distance - front_distance)
+    def get_projection_matrix(self):
+        return np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, self.p],
+            [0, 0, 0, 1]
+        ])
 
-        self.projection_matrix = [
-            [width, 0, 0, 0],
-            [0, height, 0, 0],
-            [0, 0, q, 1],
-            [0, 0, -q * front_distance, 0]
-        ]
+    def change_p(self, dp):
+        self.p += dp
+        if self.p < 0.005:
+            self.p = 0.005
+

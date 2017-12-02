@@ -25,18 +25,19 @@ Ry = lambda th: [
 ]
 
 T = lambda d: [
-    [1, 0, 0, d[0]],
-    [0, 1, 0, d[1]],
-    [0, 0, 1, d[2]],
-    [0, 0, 0, 1]
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [d[0], d[1], d[2], 1]
 ]
 
 S = lambda s: [
-    [s, 0, 0, 0],
-    [0, s, 0, 0],
-    [0, 0, s, 0],
-    [0, 0, 0, 1]
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1/s]
 ]
+
 
 class Point3D:
     def __init__(self, x=0, y=0, z=0):
@@ -81,26 +82,57 @@ class Point3D:
     def scale(point, s):
         return numpy.dot(S(s), point)
 
-    def transform(self, options):
+    @staticmethod
+    def apply_camera(point, camera_matrix):
+        res = numpy.dot(camera_matrix, point)
+        return res
+
+    def transform(self, options, camera):
         uniform_point = self.to_uniform_coordinates()
 
-        uniform_point = Point3D.translate(
-            Point3D.scale(
-                Point3D.rotate_z(
-                    Point3D.rotate_y(
-                        Point3D.rotate_x(uniform_point, options.x_angle),
-                        options.y_angle
-                    ),
-                    options.z_angle
-                ),
-                options.scale
-            ),
-            options.dx,
-            options.dy,
-            options.dz
-        )
+        final_matrix = self.get_transforming_matrix(options, camera)
 
-        return Point3D.from_uniform_coordinates(uniform_point)
+        uniform_point = numpy.dot(uniform_point, final_matrix)
+
+        p = Point3D.from_uniform_coordinates(uniform_point)
+
+        return p
+
+    @staticmethod
+    def get_transforming_matrix(options, camera):
+        # return numpy.dot(
+        #     numpy.dot(
+        #         Rx(options.x_angle),
+        #         numpy.dot(
+        #             Ry(options.y_angle),
+        #             numpy.dot(
+        #                 Rz(options.z_angle),
+        #                 numpy.dot(
+        #                     S(options.scale),
+        #                     T([options.dx, options.dy, options.dz])
+        #                 )
+        #             )
+        #         )
+        #     ),
+        #     camera.get_projection_matrix()
+        # )
+
+        return numpy.dot(
+            S(options.scale),
+            numpy.dot(
+                T([options.dx, options.dy, options.dz]),
+                numpy.dot(
+                    Rx(options.x_angle),
+                    numpy.dot(
+                        Ry(options.y_angle),
+                        numpy.dot(
+                            Rz(options.z_angle),
+                            camera.get_projection_matrix()
+                        )
+                    )
+                )
+            )
+        )
 
     def __eq__(self, p):
         return p.x == self.x and p.y == self.y and p.z == self.z
